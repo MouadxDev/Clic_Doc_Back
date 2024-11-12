@@ -116,6 +116,7 @@ class FactureController extends Controller
         ->where("factures.statut",'=','non payé')
         ->select('factures.*')
         ->get();
+        
         $parts = Facture::join("consultations as c",'c.id','=',"factures.consultation_id")
         ->join("users as u",'u.id','=','c.doctor_id')
         ->join("payments as p",'p.facture_id','=','factures.id')
