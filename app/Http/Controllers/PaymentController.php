@@ -24,13 +24,13 @@ class PaymentController extends Controller
         // ->select('f.uid','payments.*')
         // ->paginate(request()->toGet);
         return Payment::join('factures as f', 'payments.facture_id', '=', 'f.id')
-    ->join('consultations as c', 'c.id', '=', 'f.consultation_id')
-    ->join('users as u', 'u.id', '=', 'c.doctor_id')
-    ->where('u.entity_id','=',auth()->user()->entity_id)
-    ->select('f.uid','payments.*')  // Select all columns from each table
-    ->paginate(request()->toGet);
+            ->join('consultations as c', 'c.id', '=', 'f.consultation_id')
+            ->join('users as u', 'u.id', '=', 'c.doctor_id')
+            ->where('u.entity_id','=',auth()->user()->entity_id)
+            ->select('f.uid','payments.*')  // Select all columns from each table
+            ->paginate(request()->toGet);
 
-    }
+            }
 
     /**
      * Show the form for creating a new resource.
