@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
-    /**
+    /** 
      * Display a listing of the resource.
      */
     public function index()
@@ -29,7 +29,6 @@ class PaymentController extends Controller
             ->where('u.entity_id','=',auth()->user()->entity_id)
             ->select('f.uid','payments.*')  // Select all columns from each table
             ->paginate(request()->toGet);
-
             }
 
     /**
