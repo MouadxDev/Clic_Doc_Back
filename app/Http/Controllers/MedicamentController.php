@@ -14,13 +14,16 @@ class MedicamentController extends Controller
     public function index()
     {
         $model = Medicament::join("laboratoires as l" , "l.id","=","medicaments.lab_id")
+        
         ->select('l.name as lab',"medicaments.*");
+
         if(request()->has("toGet"))
             return $model->paginate(request()->toGet);
         else
         {
             return $model->get();
         }
+    
     }
 
     /**
