@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\DemandeAnalyse;
+use App\Models\ClicklabJoin;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class DemandeAnalyseController extends Controller
 {
@@ -34,20 +36,47 @@ class DemandeAnalyseController extends Controller
     public function store(Request $request)
     {
         $model = new DemandeAnalyse();
-        $model -> consultation_id = request()->consultation_id; 
-        $model -> analyse_id = request()->analyse_id; 
-        $model -> state = "soumise"; 
-        $model -> save() ;
-
-        return $model;
+        $model->consultation_id = request()->consultation_id; 
+        $model->analyse_id = request()->analyse_id; 
+        $model->state = "soumise"; 
+        $model->save();
+    
+        // Generate or retrieve the unique key for the consultation
+        $consultationId = $model->consultation_id;
+        $clilcklabJoin = ClicklabJoin::where('consultation_id', $consultationId)->first();
+    
+        if (!$clilcklabJoin) {
+            $uniqueKey = null;
+    
+            do {
+                // Generate a custom unique key, e.g., "AN-123456"
+                $prefix = 'AN'; // Prefix for the key
+                $randomNumber = mt_rand(100000, 999999); // Generate a 6-digit random number
+                $uniqueKey = "{$prefix}-{$randomNumber}";
+    
+                // Check if the generated key already exists
+            } while (ClicklabJoin::where('unique_key', $uniqueKey)->exists());
+    
+            $clilcklabJoin = new ClicklabJoin();
+            $clilcklabJoin->consultation_id = $consultationId;
+            $clilcklabJoin->unique_key = $uniqueKey;
+            $clilcklabJoin->save();
+        }
+    
+        return [
+            'demande_analyse' => $model,
+            'clilcklab_join' => $clilcklabJoin
+        ];
     }
+    
+    
 
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
-        return DemandeAnalyse::join("analyses as a","a.id",'=',"demande_analyses.analyse_id")
+        return DemandeAnalyse::join("analyses as a","a.id","=","demande_analyses.analyse_id")
         ->where("demande_analyses.consultation_id","=",$id)
         ->select("a.libelle","demande_analyses.*")
         ->get();
@@ -59,10 +88,11 @@ class DemandeAnalyseController extends Controller
     public function edit(string $id)
     {
         if(auth()->user()->role=="Admin" OR auth()->user()->role=="doctor")
-            $doctor = auth()->user() ;
+            $doctor = auth()->user();
         else 
-            $doctor = User::where("entity_id",'=',auth()->user()->entity_id)->whereIn("role",["Admin","doctor"]) -> first();
-        return DemandeAnalyse::join("analyses as a","a.id",'=',"demande_analyses.analyse_id")
+            $doctor = User::where("entity_id","=",auth()->user()->entity_id)->whereIn("role",["Admin","doctor"])->first();
+
+        return DemandeAnalyse::join("analyses as a","a.id","=","demande_analyses.analyse_id")
         ->join("consultations as c","c.id","=","demande_analyses.consultation_id")
         ->where("c.patient_id","=",$id)
         ->where("c.doctor_id","=",$doctor->id)
@@ -76,10 +106,10 @@ class DemandeAnalyseController extends Controller
     public function update(Request $request, string $id)
     {
         $model = DemandeAnalyse::find($id);
-        $model -> lab_id = request()->lab_id;
-        $model -> state = request()->state;
-        $model -> document = request()->document;
-        $model -> save();
+        $model->lab_id = request()->lab_id;
+        $model->state = request()->state;
+        $model->document = request()->document;
+        $model->save();
 
         return $model;
     }
@@ -90,7 +120,7 @@ class DemandeAnalyseController extends Controller
     public function destroy(string $id)
     {
         $model = DemandeAnalyse::find($id);
-        $model -> delete();
-         return ["message"=>"Supprimé avec succès"];
+        $model->delete();
+        return ["message" => "Supprimé avec succès"];
     }
 }

@@ -37,6 +37,8 @@ use App\Http\Controllers\TableauPersonaliseController;
 use App\Http\Controllers\TasksController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\ReportingController;
+use App\Http\Controllers\StockController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -91,6 +93,7 @@ Route::prefix("/v1")->middleware('auth:sanctum')->group(function (){
     Route::resource("/tasks",TasksController::class);
     Route::resource("/tableau-perso",TableauPersonaliseController::class);
     
+    Route::resource('/stock', StockController::class);
     
     Route::resource("/licence",EntityController::class);
     Route::resource("/users",UsersController::class);
